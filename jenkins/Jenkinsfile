@@ -8,15 +8,19 @@ node {
             junit 'target/surefire-reports/*.xml'
         }
         stage('Deploy') {
-            input message: 'Lanjutkan ke tahap Deploy?',
-                ok: 'Proceed',
-                cancel: 'Abort'
-
-            if (params.input == 'Proceed') {
-                withCredentials([string(credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53', variable: 'HEROKU_API_KEY')]) {
-                    sh 'heroku container:login'
-                    sh 'heroku container:push web --app submission-cicd-pipeline-midor'
-                    sh 'heroku container:release web --app submission-cicd-pipeline-midor'
+            timeout(time: 1, unit: 'HOURS') { // Set timeout for input step
+                def userInput = input(
+                    message: 'Lanjutkan ke tahap Deploy?',
+                    submitter: 'Dicoding Indonesia', // Who can approve
+                    parameters: [choice(name: 'proceed', choices: 'Proceed', description: 'Proceed with deployment')]
+                )
+                
+                if (userInput.proceed == 'Proceed') {
+                    withCredentials([string(credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53', variable: 'HEROKU_API_KEY')]) {
+                        sh 'heroku container:login'
+                        sh 'heroku container:push web --app submission-cicd-pipeline-midor'
+                        sh 'heroku container:release web --app submission-cicd-pipeline-midor'
+                    }
                 }
             }
         }
