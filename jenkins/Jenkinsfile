@@ -8,19 +8,13 @@ node {
             junit 'target/surefire-reports/*.xml'
         }
         stage('Deploy') {
-            input message: 'Lanjutkan ke tahap Deploy?',
-                ok: 'Proceed',
-                cancel: 'Abort'
-
-            if (params.input == 'Proceed') {
-                echo 'Deploying application to staging server...'
-                sh 'docker build -t my-app .'
-                sh 'docker push my-app'
-
-                sleep 60
-
-                echo 'Application is now running on staging server.'
+            withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
+                sh 'docker run --rm -e HEROKU_API_KEY=$HEROKU_API_KEY -v $PWD:/app heroku/heroku:16 container:login'
+                sh 'docker run --rm -e HEROKU_API_KEY=$HEROKU_API_KEY -v $PWD:/app heroku/heroku:16 container:push web --app submission-cicd-pipeline-midor'
+                sh 'docker run --rm -e HEROKU_API_KEY=$HEROKU_API_KEY -v $PWD:/app heroku/heroku:16 container:release web --app submission-cicd-pipeline-midor'
             }
+            sleep 60 // Tunggu sejenak setelah deployment selesai
+            echo 'Application is now running on staging server.'
         }
     }
 }
