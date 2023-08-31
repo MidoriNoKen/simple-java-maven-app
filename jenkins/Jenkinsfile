@@ -1,35 +1,14 @@
 node {
-    def pythonImage = 'python:3-alpine'
-
-    stage('Checkout') {
-        checkout scm
-    }
-
-    stage('Build') {
-        dir('sources') {
-            docker.image(pythonImage).inside {
-                sh 'mvn -B -DskipTests clean package'
-            }
+    docker.image('maven:3.9.0').inside('-v /root/.m2:/root/.m2') {
+        stage('Build') {
+            sh 'mvn -B -DskipTests clean package'
         }
-    }
-
-    stage('Test') {
-        dir('sources') {
-            docker.image(pythonImage).inside {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
+        stage('Test') {
+            sh 'mvn test'
+            junit 'target/surefire-reports/*.xml'
         }
-    }
-
-    stage('Deliver') {
-        dir('sources') {
-            // Jalankan skrip deliver.sh
-            sh '../jenkins/scripts/deliver.sh'
+        stage('Deliver') {
+            sh './jenkins/scripts/deliver.sh'
         }
     }
 }
