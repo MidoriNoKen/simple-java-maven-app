@@ -1,26 +1,22 @@
 node {
     docker.image('maven:3.9.0').inside('-v /root/.m2:/root/.m2') {
-        stage('Checkout') {
-            checkout scm
+        stage('Build') {
+            sh 'mvn -B -DskipTests clean package'
         }
-
-        stage('Build and Test') {
-            try {
-                sh 'mvn -B -DskipTests clean package'
-                sh 'mvn test'
-                junit 'target/surefire-reports/*.xml'
-            } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-                throw e
-            }
+        stage('Test') {
+            sh 'mvn test'
+            junit 'target/surefire-reports/*.xml'
         }
-
         stage('Deploy') {
-            echo 'Deploying application to staging server...'
-            sh 'docker build -t my-app .'
-            sh 'docker push my-app'
+            input message: 'Lanjutkan ke tahap Deploy?',
+                ok: 'Proceed',
+                cancel: 'Abort'
 
-            sleep 60
+            if (params.input == 'Proceed') {
+                echo 'Deploying application to staging server...'
+                sh 'docker build -t my-app .'
+                sh 'docker push my-app'
+            }
         }
     }
 }
