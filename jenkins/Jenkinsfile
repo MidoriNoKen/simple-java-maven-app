@@ -1,44 +1,35 @@
 node {
-    def mavenImage = 'maven:3.9.0'
+    def pythonImage = 'python:3-alpine'
+
+    stage('Checkout') {
+        checkout scm
+    }
 
     stage('Build') {
-        agent {
-            docker {
-                image mavenImage
-                args '-v /root/.m2:/root/.m2'
+        dir('sources') {
+            docker.image(pythonImage).inside {
+                sh 'mvn -B -DskipTests clean package'
             }
-        }
-        steps {
-            sh 'mvn -B -DskipTests clean package'
         }
     }
 
     stage('Test') {
-        agent {
-            docker {
-                image mavenImage
-                args '-v /root/.m2:/root/.m2'
+        dir('sources') {
+            docker.image(pythonImage).inside {
+                sh 'mvn test'
             }
-        }
-        steps {
-            sh 'mvn test'
-        }
-        post {
-            always {
-                junit 'target/surefire-reports/*.xml'
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
         }
     }
 
     stage('Deliver') {
-        agent {
-            docker {
-                image mavenImage
-                args '-v /root/.m2:/root/.m2'
-            }
-        }
-        steps {
-            sh './jenkins/scripts/deliver.sh'
+        dir('sources') {
+            // Jalankan skrip deliver.sh
+            sh '../jenkins/scripts/deliver.sh'
         }
     }
 }
