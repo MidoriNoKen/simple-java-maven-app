@@ -13,16 +13,14 @@ node {
                 cancel: 'Abort'
 
             if (params.input == 'Proceed') {
-                withCredentials([string(credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53', variable: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53')]) {
+                withCredentials([string(credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53', variable: 'HEROKU_API_KEY')]) {
                     sh 'heroku container:login'
                     sh 'heroku container:push web --app submission-cicd-pipeline-midor'
                     sh 'heroku container:release web --app submission-cicd-pipeline-midor'
                 }
-
-                sleep 60
-
-                echo 'Application is now running on staging server.'
             }
         }
     }
+    sleep 60 // Tunggu sejenak setelah deployment selesai
+    echo 'Application is now running on staging server.'
 }
