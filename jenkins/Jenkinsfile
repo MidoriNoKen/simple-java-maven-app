@@ -7,16 +7,20 @@ node {
             sh 'mvn test'
             junit 'target/surefire-reports/*.xml'
         }
-        stage('Push to GitHub') {
-            steps {
-                sh 'git push origin main' // atau branch lain yang kamu gunakan
+        stage('Deploy') {
+            input message: 'Lanjutkan ke tahap Deploy?',
+                ok: 'Proceed',
+                cancel: 'Abort'
+
+            if (params.input == 'Proceed') {
+                echo 'Deploying application to staging server...'
+                sh 'docker build -t my-app .'
+                sh 'docker push my-app'
             }
-        }
-    }
-    
-    stage('Deploy to Heroku') {
-        steps {
-            // Tidak perlu tindakan apa-apa di sini
+            
+            sleep 60
+
+            echo 'Application is now running on staging server.'
         }
     }
 }
