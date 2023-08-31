@@ -20,8 +20,8 @@ node {
         if (params.input == 'Proceed') {
             withCredentials([string(credentialsId: 'HEROKU_API_KEY', variable: 'HEROKU_API_KEY')]) {
                 sh 'heroku container:login'
-                sh 'heroku container:push web --app submission-cicd-pipeline-midorinoken'
-                sh 'heroku container:release web --app submission-cicd-pipeline-midorinoken'
+                sh 'heroku container:push web --app submission-cicd-pipeline-midor'
+                sh 'heroku container:release web --app submission-cicd-pipeline-midor'
             }
             echo 'Application is now deployed to Heroku.'
         }
