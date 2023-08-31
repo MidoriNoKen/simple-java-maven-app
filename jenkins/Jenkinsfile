@@ -18,6 +18,8 @@ node {
                 sh 'docker push my-app'
 
                 sleep 60
+
+                echo 'Application is now running on staging server.'
             }
         }
     }
