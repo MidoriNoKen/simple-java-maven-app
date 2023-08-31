@@ -7,14 +7,30 @@ node {
             sh 'mvn test'
             junit 'target/surefire-reports/*.xml'
         }
-        stage('Deploy') {
-            withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
-                sh 'heroku container:login'
-                sh 'heroku container:push web --app submission-cicd-pipeline-midor'
-                sh 'heroku container:release web --app submission-cicd-pipeline-midor'
+        stage('Deploy to Heroku') {
+            input message: 'Lanjutkan ke tahap Deploy ke Heroku?',
+                ok: 'Proceed',
+                cancel: 'Abort'
+
+            if (params.input == 'Proceed') {
+                withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
+                    sh '''
+                        docker build -t my-app .
+                        docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+                        docker tag my-app registry.heroku.com/submission-cicd-pipeline-midor/web
+                        docker push registry.heroku.com/submission-cicd-pipeline-midor/web
+                        curl -n -X PATCH https://api.heroku.com/apps/submission-cicd-pipeline-midor/formation \
+                            -d "{
+                                \"updates\": [
+                                    {\"type\": \"web\", \"docker_image\": \"registry.heroku.com/submission-cicd-pipeline-midor/web\"}
+                                ]
+                            }" -H "Content-Type: application/json" -H "Authorization: Bearer $HEROKU_API_KEY"
+                    '''
+                }
+
+                sleep 60 // Tunggu sejenak setelah deployment selesai
+                echo 'Application is now running on staging server.'
             }
-            sleep 60 // Tunggu sejenak setelah deployment selesai
-            echo 'Application is now running on staging server.'
         }
     }
 }
