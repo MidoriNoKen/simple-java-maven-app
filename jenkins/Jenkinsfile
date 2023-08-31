@@ -1,29 +1,28 @@
 node {
-    stage('Checkout') {
-        checkout scm
-    }
-    stage('Build and Test') {
-        try {
+    docker.image('maven:3.9.0').inside('-v /root/.m2:/root/.m2') {
+        stage('Build') {
             sh 'mvn -B -DskipTests clean package'
+        }
+        stage('Test') {
             sh 'mvn test'
             junit 'target/surefire-reports/*.xml'
-        } catch (Exception e) {
-            currentBuild.result = 'FAILURE'
-            throw e
         }
-    }
-    stage('Deploy to Heroku') {
-        input message: 'Lanjutkan ke tahap Deploy ke Heroku?',
-            ok: 'Proceed',
-            cancel: 'Abort'
+        stage('Deploy') {
+            input message: 'Lanjutkan ke tahap Deploy?',
+                ok: 'Proceed',
+                cancel: 'Abort'
 
-        if (params.input == 'Proceed') {
+            if (params.input == 'Proceed') {
             withCredentials([string(credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53', variable: 'HEROKU_API_KEY')]) {
                 sh 'heroku container:login'
                 sh 'heroku container:push web --app submission-cicd-pipeline-midor'
                 sh 'heroku container:release web --app submission-cicd-pipeline-midor'
             }
-            echo 'Application is now deployed to Heroku.'
+
+                sleep 60
+
+                echo 'Application is now running on staging server.'
+            }
         }
     }
 }
