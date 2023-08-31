@@ -9,8 +9,10 @@ node {
         }
         stage('Deploy') {
             withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
-                sh 'heroku container:login'
-                sh 'heroku container:push web --app submission-cicd-pipeline-midor'
+                sh 'docker build -t my-app .'
+                sh 'docker tag my-app registry.heroku.com/submission-cicd-pipeline-midor/web'
+                sh 'docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com'
+                sh 'docker push registry.heroku.com/submission-cicd-pipeline-midor/web'
                 sh 'heroku container:release web --app submission-cicd-pipeline-midor'
             }
             sleep 60 // Tunggu sejenak setelah deployment selesai
