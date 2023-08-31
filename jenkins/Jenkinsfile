@@ -9,7 +9,6 @@ node {
         }
         stage('Deploy') {
             withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
-                sh 'curl https://cli-assets.heroku.com/install.sh | sh' // Install Heroku CLI
                 sh 'heroku container:login'
                 sh 'heroku container:push web --app submission-cicd-pipeline-midor'
                 sh 'heroku container:release web --app submission-cicd-pipeline-midor'
