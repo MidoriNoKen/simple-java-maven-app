@@ -16,6 +16,8 @@ node {
                 echo 'Deploying application to staging server...'
                 sh 'docker build -t my-app .'
                 sh 'docker push my-app'
+
+                sleep 60
             }
         }
     }
