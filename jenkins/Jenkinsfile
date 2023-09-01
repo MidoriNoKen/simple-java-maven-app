@@ -24,9 +24,7 @@ node {
                         heroku container:login
                         heroku git:remote -a submission-cicd-pipeline-midor
                         docker build -t my-app .
-                        docker tag my-app registry.heroku.com/submission-cicd-pipeline-midor/web
-                        docker push registry.heroku.com/submission-cicd-pipeline-midor/web
-                        heroku container:release web
+                        heroku container:push my-app
                     '''
                 }
             }
