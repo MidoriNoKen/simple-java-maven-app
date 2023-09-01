@@ -7,7 +7,7 @@ node {
             sh 'mvn test'
             junit 'target/surefire-reports/*.xml'
         }
-        stage('Deploy to Heroku') {
+        stage('Deploy') {
             input message: 'Lanjutkan ke tahap Deploy?',
                 ok: 'Proceed',
                 cancel: 'Abort'
