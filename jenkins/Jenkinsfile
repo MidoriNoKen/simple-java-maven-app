@@ -7,14 +7,34 @@ node {
             sh 'mvn test'
             junit 'target/surefire-reports/*.xml'
         }
-        stage('Deploy') {
-            withCredentials([string(credentialsId: '50868197-9178-4ff6-a9c8-36d509564558', variable: 'HEROKU_API_KEY')]) {
-                sh 'heroku container:login'
-                sh 'heroku container:push web --app submission-cicd-pipeline-midor'
-                sh 'heroku container:release web --app submission-cicd-pipeline-midor'
+        stage('Deploy to Heroku') {
+            input message: 'Lanjutkan ke tahap Deploy?',
+                ok: 'Proceed',
+                cancel: 'Abort'
+
+            if (params.input == 'Proceed') {
+                withCredentials([[
+                    $class: 'UsernamePasswordMultiBinding',
+                    credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53',
+                    usernameVariable: 'HEROKU_EMAIL',
+                    passwordVariable: 'HEROKU_API_KEY'
+                ]]) {
+                    sh '''
+                        heroku login -i
+                        heroku container:login
+                        heroku git:remote -a submission-cicd-pipeline-midor
+                        docker build -t my-app .
+                        docker tag my-app registry.heroku.com/submission-cicd-pipeline-midor/web
+                        docker push registry.heroku.com/submission-cicd-pipeline-midor/web
+                        heroku container:release web
+                    '''
+                }
             }
-            sleep 60 // Tunggu sejenak setelah deployment selesai
-            echo 'Application is now running on staging server.'
+
+            sleep 60
+
+            echo 'Application is now running on Heroku.'
         }
+
     }
 }
