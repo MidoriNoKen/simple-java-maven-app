@@ -1,32 +1,42 @@
-pipeline {
-    agent any
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+node {
+    docker.image('maven:3.9.0').inside('-v /root/.m2:/root/.m2') {
+        def appName = 'my-app' // Nama aplikasi Anda
+        def appVersion = '1.0-SNAPSHOT' // Versi aplikasi Anda
 
         stage('Build') {
-            steps {
-                script {
-                    def mvnHome = tool name: 'Maven', type: 'Tool'
-                    sh "${mvnHome}/bin/mvn clean install"
-                }
-            }
+            sh 'mvn -B -DskipTests clean package'
         }
+        stage('Test') {
+            sh 'mvn test'
+            junit 'target/surefire-reports/*.xml'
+        }
+        stage('Deploy') {
+            input message: 'Lanjutkan ke tahap Deploy?',
+                ok: 'Proceed',
+                cancel: 'Abort'
 
-        stage('Deploy to Heroku') {
-            steps {
-                script {
-                    withCredentials([[$class: 'HerokuApiKeyBinding', credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53']]) {
-                        sh 'heroku container:login'
-                        sh 'heroku container:push web -a submission-cicd-pipeline-midor'
-                        sh 'heroku container:release web -a submission-cicd-pipeline-midor'
-                    }
+            if (params.input == 'Proceed') {
+                withCredentials([[
+                    $class: 'UsernamePasswordMultiBinding',
+                    credentialsId: '50868197-9178-4ff6-a9c8-36d509564558',
+                    usernameVariable: 'midor1nok3n@gmail.com',
+                    passwordVariable: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53'
+                ]]) {
+                    sh '''
+                        heroku login -i
+                        heroku container:login
+                        heroku git:remote -a submission-cicd-pipeline-midor
+                        heroku ps:scale web=1
+                        docker build -t ${appName}:${appVersion} .
+                        heroku container:push web
+                        heroku container:release web
+                    '''
                 }
             }
+
+            sleep 60
+
+            echo 'Application is now running on Heroku.'
         }
     }
 }
