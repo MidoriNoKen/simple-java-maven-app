@@ -18,9 +18,9 @@ node {
             if (params.input == 'Proceed') {
                 withCredentials([[
                     $class: 'UsernamePasswordMultiBinding',
-                    credentialsId: '50868197-9178-4ff6-a9c8-36d509564558',
-                    usernameVariable: 'midor1nok3n@gmail.com',
-                    passwordVariable: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53'
+                    credentialsId: 'eaeeb0eb-d969-420f-83ae-553e2aba3d53',
+                    usernameVariable: 'HEROKU_EMAIL',
+                    passwordVariable: 'HEROKU_API_KEY'
                 ]]) {
                     sh '''
                         heroku login -i
