@@ -26,6 +26,8 @@ node {
                         heroku ps:scale web=1
                         docker build -t my-app .
                         heroku container:release my-app
+                        heroku git:push heroku master
+
                     '''
                 }
             }
