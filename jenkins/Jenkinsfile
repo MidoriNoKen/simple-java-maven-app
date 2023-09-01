@@ -1,5 +1,8 @@
 node {
     docker.image('maven:3.9.0').inside('-v /root/.m2:/root/.m2') {
+        def appName = 'my-app' // Nama aplikasi Anda
+        def appVersion = '1.0-SNAPSHOT' // Versi aplikasi Anda
+
         stage('Build') {
             sh 'mvn -B -DskipTests clean package'
         }
@@ -24,8 +27,9 @@ node {
                         heroku container:login
                         heroku git:remote -a submission-cicd-pipeline-midor
                         heroku ps:scale web=1
-                        heroku container:push my-app
-                        heroku container:release my-app
+                        docker build -t ${appName}:${appVersion} .
+                        heroku container:push web
+                        heroku container:release web
                     '''
                 }
             }
