@@ -24,18 +24,15 @@ node {
                         heroku container:login
                         heroku git:remote -a submission-cicd-pipeline-midor
                         heroku ps:scale web=1
-                        docker build -t my-app .
+                        heroku container:push my-app
                         heroku container:release my-app
-                        heroku git:push heroku master
-
                     '''
                 }
             }
-            
+
             sleep 60
 
             echo 'Application is now running on Heroku.'
         }
-
     }
 }
