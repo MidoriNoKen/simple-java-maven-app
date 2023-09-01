@@ -23,6 +23,7 @@ node {
                         heroku login -i
                         heroku container:login
                         heroku git:remote -a submission-cicd-pipeline-midor
+                        heroku ps:scale web=1
                         docker build -t my-app .
                         heroku container:release my-app
                     '''
