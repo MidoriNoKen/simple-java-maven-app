@@ -26,7 +26,6 @@ node {
                         docker build -t my-app .
                         docker tag my-app registry.heroku.com/submission-cicd-pipeline-midor/web
                         docker push registry.heroku.com/submission-cicd-pipeline-midor/web
-                        heroku buildpacks:set heroku/java
                         heroku container:release web
                     '''
                 }
