@@ -34,8 +34,6 @@ node {
                 }
             }
 
-            sleep 60
-
             echo 'Application is now running on Heroku.'
         }
     }
